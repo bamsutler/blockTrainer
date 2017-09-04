@@ -1,0 +1,16 @@
+{
+  "name": "peoplecoin",
+  "version": "0.0.0",
+  "description": "a crypto currency powerd by people",
+  "main": "start.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Sam Butler",
+  "license": "SEE LICENSE IN license.txt",
+  "devDependencies": {
+    "chai": "^4.1.1",
+    "eslint": "^4.4.1",
+    "mocha": "^3.5.0"
+  }
+}
