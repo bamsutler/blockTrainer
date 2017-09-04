@@ -14,7 +14,7 @@ var log = new (win.Logger)({
 });
 chain = chain();
 
-var port = 2323;
+var port = 80;
 
 app.listen(port);
 //eslint-disable-line no-console
