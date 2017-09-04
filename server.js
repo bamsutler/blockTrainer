@@ -1,7 +1,7 @@
 var app = require('http').createServer(handler);
 var io = require('socket.io')(app);
 var fs = require('fs');
-var chain = require('../peoplecoin');
+var chain = require('./peoplecoin');
 var svgCaptcha = require('svg-captcha');
 var win = require('winston');
 
