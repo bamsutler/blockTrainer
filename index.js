@@ -1,4 +1,4 @@
-var socket = io('http://localhost:2323');
+var socket = io();
 var context = {
     chain: []
 };
