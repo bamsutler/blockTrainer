@@ -74,12 +74,14 @@ io.on('connection', function (socket) {
             usersAddresses.push(users[key].address);
         }
     }
-    socket.emit('connected', {
+    socket.emit('connected', JSON.stringify({
         address: users[socket.id].address,
         userCount:  userCount,
         usersAddresses: usersAddresses,
-        userBalance: chain.getBalance(users[socket.id].address)
-    });
+        userBalance: chain.getBalance(users[socket.id].address),
+        topBlocks: chain.getTopBlocks(),
+    }));
+
     socket.on('get captcha', function() {
         var c = svgCaptcha.create();
         users[socket.id].captchaText = c.text;
@@ -103,8 +105,18 @@ io.on('connection', function (socket) {
     });
 
     socket.on('disconnect', function(){
+        userCount -= 1;
+        let usersAddresses = [];
+        for(let key in users){
+            if(users[key].address != users[socket.id].address){
+                usersAddresses.push(users[key].address);
+            }
+        }
         delete users[socket.id];
-        io.emit('user disconnect', {});
+        io.emit('user disconnect', {
+            userCount,
+            usersAddresses,
+        });
     });
 
 });

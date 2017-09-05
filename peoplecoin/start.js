@@ -112,9 +112,23 @@ function startChain(){
         }
         return total;
     }
+    function getTopBlocks(){
+        let topBlocks = [];
+        let it = chain.iterator();
+        for (let i=0; i<4; i++){
+            topBlocks.push(it.currentNode.block);
+            if(it.hasNext()){
+                it.next()
+            }else{
+                break;
+            }
+        }
+        return topBlocks;
+    }
 
     return {
         getIterator: chain.iterator,
+        getTopBlocks,
         buildBlock,
         createPendingTransaction,
         getPendingTxns,
@@ -162,16 +176,16 @@ function dll(){
             let currentNode = _head;
             return {
                 next: function(){
-                    currentNode = currentNode._next;
+                    this.currentNode = this.currentNode._next;
                 },
                 hasNext: function(){
-                    return currentNode._next !== null;
+                    return this.currentNode._next !== null;
                 },
                 prev: function(){
-                    currentNode = currentNode._prev;
+                    this.currentNode = this.currentNode._prev;
                 },
                 hasPrev: function(){
-                    return currentNode._prev !== null;
+                    return this.currentNode._prev !== null;
                 },
                 currentNode
             };

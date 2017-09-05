@@ -3,19 +3,21 @@ var context = {
     chain: []
 };
 
-socket.on('connected', function (data) {
+socket.on('connected', function (dataString) {
     socket.emit('get captcha');
+    let data = JSON.parse(dataString);
     context.addresses = data.usersAddresses;
     context.userCount = data.userCount;
-    context.addresses.forEach(function(el, index){
-        var opt = document.createElement('option');
-        opt.value = index;
-        opt.text = el;
-        document.getElementById('toAccount').appendChild(opt);
-    });
+    context.userAddress = data.address;
     context.userBalance = Number(data.userBalance);
-    document.getElementById('userAddress').textContent = data.address;
-    document.getElementById('userBalance').textContent = Number(data.userBalance);
+
+    populateAddessBox(context.addresses);
+    console.log(data);
+    data.topBlocks.forEach(updateChain);
+
+    document.getElementById('userCount').textContent = context.userCount;
+    document.getElementById('userAddress').textContent = context.userAddress;
+    document.getElementById('userBalance').textContent = context.userBalance
 });
 
 socket.on('new captcha', function(data){
@@ -113,4 +115,17 @@ function isSendable(amount){
 function showError(msg){
     // this should be an error toast
     console.error(msg);
+}
+
+function populateAddessBox(addresses){
+    var opt = document.createElement('option');
+        opt.value = null;
+        opt.text = 'Select an Account';
+        document.getElementById('toAccount').appendChild(opt);
+    addresses.forEach(function(el, index){
+        var opt = document.createElement('option');
+        opt.value = index;
+        opt.text = el;
+        document.getElementById('toAccount').appendChild(opt);
+    });
 }
