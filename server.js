@@ -81,6 +81,10 @@ io.on('connection', function (socket) {
         userBalance: chain.getBalance(users[socket.id].address),
         topBlocks: chain.getTopBlocks(),
     }));
+    io.emit('peer connected', {
+        address: users[socket.id].address,
+        userCount:  userCount,
+    });
 
     socket.on('get captcha', function() {
         var c = svgCaptcha.create();
@@ -94,10 +98,9 @@ io.on('connection', function (socket) {
         }
     });
     socket.on('transaction submit', function(data){
-        chain.createPendingTransaction(data.to, data.from, data.amount);
+        chain.createPendingTransaction(data.to, users[socket.id].address, data.amount);
         io.emit('update transactions', chain.getPendingTxns() );
     });
-
     socket.on('get user data', function(){
         socket.emit('user data', {
             userBalance: chain.getBalance(users[socket.id].address)

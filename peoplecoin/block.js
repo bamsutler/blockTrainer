@@ -29,7 +29,7 @@ function Block(transactions, outputs, lastBlock, nonce, winner){
     }
 
     for(let key in blockData.txns){
-        hasher.update(blockData.txns[key]);
+        hasher.update(blockData.txns[key].toString());
     }
     for(let key in blockData.outs){
         hasher.update(blockData.outs[key].toString());

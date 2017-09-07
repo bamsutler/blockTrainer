@@ -31,14 +31,16 @@ function startChain(){
         var inputs = [];
         var finalOutputs = [];
 
-        for(let output in outputs){
-            var result = processTransaction(output);
+        for(let key in outputs){
+            var result = processTransaction(outputs[key]);
             if(!result){
                 continue; // bad transactions get droped
             }
             inputs.splice(inputs.length > 0 ? inputs.length-1 : 0, 0, result.inputs);
-            finalOutputs.push(output);
-            finalOutputs.push(result.change);
+            finalOutputs.push(outputs[key]);
+            if(result.change !== null){
+                finalOutputs.push(result.change);
+            }
         }
 
         let creatorPayment = transaction(creatorAddress, 'Genisis', 5);
@@ -107,7 +109,7 @@ function startChain(){
         let total = 0;
         for(let key in unspentTransactions){
             if(unspentTransactions[key].toAddress == address){
-                total += unspentTransactions[key].amount;
+                total += Number(unspentTransactions[key].amount);
             }
         }
         return total;

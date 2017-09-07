@@ -12,7 +12,6 @@ socket.on('connected', function (dataString) {
     context.userBalance = Number(data.userBalance);
 
     populateAddessBox(context.addresses);
-    console.log(data);
     data.topBlocks.forEach(updateChain);
 
     document.getElementById('userCount').textContent = context.userCount;
@@ -30,7 +29,7 @@ socket.on( 'solved block', function(data) {
     socket.emit('get user data');
 });
 
-socket.on( 'user data', function(data){
+socket.on('user data', function(data){
     console.log('update user data', data);
     context.userBalance = Number(data.userBalance);
     document.getElementById('userBalance').textContent = Number(data.userBalance);
@@ -44,13 +43,20 @@ socket.on( 'user disconnect', function(data) {
     updateUserData(data);
 });
 
+socket.on('peer connected', function(data){
+    addAddressOption(data.address);
+    context.addresses.push(data.address)
+    context.userCount = data.userCount
+    document.getElementById('userCount').textContent = context.userCount;
+});
+
 
 function sendCap(){
     var el = document.getElementById('capresponse');
     var data = el.value;
     socket.emit('captcha submit', data);
     socket.emit('get captcha');
-    el.value = '';
+    el.value = ''; // reset the text feild
 }
 
 function updateChain(block){
@@ -89,10 +95,17 @@ function updatePanels(){
 }
 
 function sendPC(){
-    var amount = document.getElementById('sendAmount').value;
-    if(isSendable(amount)){
+    var amountContainer = document.getElementById('sendAmount');
+    var amount = amountContainer.value;
+    var toKey = document.getElementById('toAccount').value
+    if(isSendable(amount) && toKey !== null){
         //send transactions here
+        socket.emit("transaction submit", {
+            to: context.addresses[toKey],
+            amount,
+        });
     }
+    amountContainer.value = ''; // reset the text field
 }
 
 function isSendable(amount){
@@ -109,7 +122,9 @@ function isSendable(amount){
         return false;
     }
     // catch special NaN cases here
+    // see examples https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/isNaN
 
+    return true;
 }
 
 function showError(msg){
@@ -122,10 +137,15 @@ function populateAddessBox(addresses){
         opt.value = null;
         opt.text = 'Select an Account';
         document.getElementById('toAccount').appendChild(opt);
-    addresses.forEach(function(el, index){
-        var opt = document.createElement('option');
-        opt.value = index;
-        opt.text = el;
-        document.getElementById('toAccount').appendChild(opt);
+    addresses.forEach(function(el){
+        addAddressOption(el);
     });
+}
+
+function addAddressOption(address){
+    var opt = document.createElement('option');
+    var toAccountSelectBox = document.getElementById('toAccount');
+        opt.value = toAccountSelectBox.childNodes.length - 2; // 2 because we have a null 0 1 2... value list
+        opt.text = address;
+        toAccountSelectBox.appendChild(opt);
 }
