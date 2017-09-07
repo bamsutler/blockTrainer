@@ -26,6 +26,7 @@ function handler (req, res) {
             function (err, data) {
                 if (err) {
                     res.writeHead(500);
+                    res.setHeader('Content-Type', 'text/html');
                     return res.end('Error loading index.html');
                 }
 
@@ -38,6 +39,7 @@ function handler (req, res) {
             function (err, data) {
                 if (err) {
                     res.writeHead(500);
+                    res.setHeader('Content-Type', 'application/javascript');
                     return res.end('Error loading index.js');
                 }
 
@@ -51,6 +53,8 @@ function handler (req, res) {
             function (err, data) {
                 if (err) {
                     res.writeHead(500);
+                    res.setHeader('Content-Type', 'text/css');
+                    res.setHeader('Cache-Control','public, max-age=31536000');
                     return res.end('Error loading yeti');
                 }
 

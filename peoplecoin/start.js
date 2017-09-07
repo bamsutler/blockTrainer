@@ -120,7 +120,7 @@ function startChain(){
         for (let i=0; i<4; i++){
             topBlocks.push(it.currentNode.block);
             if(it.hasNext()){
-                it.next()
+                it.next();
             }else{
                 break;
             }
