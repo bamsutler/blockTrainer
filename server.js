@@ -7,13 +7,15 @@ const svgCaptcha = require('svg-captcha');
 const win = require('winston');
 
 let PORT = 80;
-var args = process.argv.slice(2);
-if(args[0]){
-    PORT = args[0];
+let env = process.env.NODE_ENV;
+if(env !== 'prod'){
+    PORT = 8080;
 }
 
+var logLevel = env !== 'prod' ? 'debug' : 'warn';
+
 let log = new (win.Logger)({
-    level: 'debug',
+    level: logLevel,
     transports: [
         new (win.transports.Console)({colorize: true}),
         new (win.transports.File)({ filename: 'server.log' })
@@ -25,15 +27,15 @@ let users = {};
 let userCount = 0;
 
 server.listen(port);
-//eslint-disable-line no-console
 log.info('Listening on ', port); 
 
 app.get('/', function(req, res, next){
     res.sendFile(__dirname + '/index.html', function(err){
         if(err){
+            log.warn('Error fetching index.html');
             next(err);
         } else {
-            win.debug('Sent index to ' + req.ip);
+            log.debug('Sent index to ' + req.ip);
         }
     });
 });
