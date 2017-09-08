@@ -16,7 +16,7 @@ socket.on('connected', function (dataString) {
 
     document.getElementById('userCount').textContent = context.userCount;
     document.getElementById('userAddress').textContent = context.userAddress;
-    document.getElementById('userBalance').textContent = context.userBalance
+    document.getElementById('userBalance').textContent = context.userBalance;
 });
 
 socket.on('new captcha', function(data){
@@ -45,8 +45,8 @@ socket.on( 'user disconnect', function(data) {
 
 socket.on('peer connected', function(data){
     addAddressOption(data.address);
-    context.addresses.push(data.address)
-    context.userCount = data.userCount
+    context.addresses.push(data.address);
+    context.userCount = data.userCount;
     document.getElementById('userCount').textContent = context.userCount;
 });
 
@@ -97,10 +97,10 @@ function updatePanels(){
 function sendPC(){
     var amountContainer = document.getElementById('sendAmount');
     var amount = amountContainer.value;
-    var toKey = document.getElementById('toAccount').value
+    var toKey = document.getElementById('toAccount').value;
     if(isSendable(amount) && toKey !== null){
         //send transactions here
-        socket.emit("transaction submit", {
+        socket.emit('transaction submit', {
             to: context.addresses[toKey],
             amount,
         });
@@ -134,9 +134,9 @@ function showError(msg){
 
 function populateAddessBox(addresses){
     var opt = document.createElement('option');
-        opt.value = null;
-        opt.text = 'Select an Account';
-        document.getElementById('toAccount').appendChild(opt);
+    opt.value = null;
+    opt.text = 'Select an Account';
+    document.getElementById('toAccount').appendChild(opt);
     addresses.forEach(function(el){
         addAddressOption(el);
     });
@@ -145,7 +145,7 @@ function populateAddessBox(addresses){
 function addAddressOption(address){
     var opt = document.createElement('option');
     var toAccountSelectBox = document.getElementById('toAccount');
-        opt.value = toAccountSelectBox.childNodes.length - 2; // 2 because we have a null 0 1 2... value list
-        opt.text = address;
-        toAccountSelectBox.appendChild(opt);
+    opt.value = toAccountSelectBox.childNodes.length - 2; // 2 because we have a null 0 1 2... value list
+    opt.text = address;
+    toAccountSelectBox.appendChild(opt);
 }

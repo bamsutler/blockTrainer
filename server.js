@@ -1,71 +1,44 @@
-var app = require('http').createServer(handler);
-var io = require('socket.io')(app);
-var fs = require('fs');
-var chain = require('./peoplecoin');
-var svgCaptcha = require('svg-captcha');
-var win = require('winston');
+const express = require('express');
+const app = express();
+const server = require('http').Server(app);
+const io = require('socket.io')(server);
+const chainGen = require('./peoplecoin');
+const svgCaptcha = require('svg-captcha');
+const win = require('winston');
 
-var log = new (win.Logger)({
+let PORT = 80;
+var args = process.argv.slice(2);
+if(args[0]){
+    PORT = args[0];
+}
+
+let log = new (win.Logger)({
     level: 'debug',
     transports: [
         new (win.transports.Console)({colorize: true}),
-        //new (win.transports.File)({ filename: 'somefile.log' })
+        new (win.transports.File)({ filename: 'server.log' })
     ]
 });
-chain = chain();
+let chain = chainGen();
+let port = PORT;
+let users = {};
+let userCount = 0;
 
-var port = 80;
-
-app.listen(port);
+server.listen(port);
 //eslint-disable-line no-console
 log.info('Listening on ', port); 
 
-function handler (req, res) {
-    if(req.url === '/') {
-        fs.readFile(__dirname + '/index.html',
-            function (err, data) {
-                if (err) {
-                    res.writeHead(500);
-                    res.setHeader('Content-Type', 'text/html');
-                    return res.end('Error loading index.html');
-                }
+app.get('/', function(req, res, next){
+    res.sendFile(__dirname + '/index.html', function(err){
+        if(err){
+            next(err);
+        } else {
+            win.debug('Sent index to ' + req.ip);
+        }
+    });
+});
 
-                res.writeHead(200);
-                res.end(data);
-            });
-    }
-    if(req.url === '/index.js') {
-        fs.readFile(__dirname + '/index.js',
-            function (err, data) {
-                if (err) {
-                    res.writeHead(500);
-                    res.setHeader('Content-Type', 'application/javascript');
-                    return res.end('Error loading index.js');
-                }
-
-                res.writeHead(200);
-                res.end(data);
-            });
-    }   
-        
-    if(req.url === '/yeti.css') {
-        fs.readFile(__dirname + '/yeti.css',
-            function (err, data) {
-                if (err) {
-                    res.writeHead(500);
-                    res.setHeader('Content-Type', 'text/css');
-                    res.setHeader('Cache-Control','public, max-age=31536000');
-                    return res.end('Error loading yeti');
-                }
-
-                res.writeHead(200);
-                res.end(data);
-            });
-    }   
-}
-
-var users = {};
-var userCount = 0;
+app.use(express.static('public'));
 
 io.on('connection', function (socket) {
     users[socket.id] = {
@@ -91,13 +64,13 @@ io.on('connection', function (socket) {
     });
 
     socket.on('get captcha', function() {
-        var c = svgCaptcha.create();
+        let c = svgCaptcha.create();
         users[socket.id].captchaText = c.text;
         socket.emit('new captcha', c.data);
     });
     socket.on('captcha submit', function(data){
         if(data == users[socket.id].captchaText){
-            var nextBlock = chain.buildBlock(data.cap, users[socket.id].address);
+            let nextBlock = chain.buildBlock(data.cap, users[socket.id].address);
             io.emit('solved block', nextBlock);
         }
     });
