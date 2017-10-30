@@ -74,6 +74,7 @@ io.on('connection', function (socket) {
         if(data == users[socket.id].captchaText){
             let nextBlock = chain.buildBlock(data.cap, users[socket.id].address);
             io.emit('solved block', nextBlock);
+            io.emit('update transactions', chain.getPendingTxns() );
         }
     });
     socket.on('transaction submit', function(data){

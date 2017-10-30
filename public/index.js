@@ -67,8 +67,10 @@ function updateChain(block){
     updatePanels();
 }
 
-function updateTransactions(){
+function updateTransactions(data){
     console.log('update trans');
+    console.log(data);
+    updateTransactionTable(data);
 }
 
 function updateAddress(){
@@ -77,6 +79,7 @@ function updateAddress(){
 
 function updateUserData(data){
     console.log('update users', data);
+    updateTransactionTable();
 }
 
 function updatePanels(){
@@ -95,9 +98,10 @@ function updatePanels(){
 }
 
 function sendPC(){
-    var amountContainer = document.getElementById('sendAmount');
-    var amount = amountContainer.value;
-    var toKey = document.getElementById('toAccount').value;
+    let amountContainer = document.getElementById('sendAmount');
+    let toAccountContainer = document.getElementById('toAccount');
+    let amount = amountContainer.value;
+    let toKey = toAccountContainer.value;
     if(isSendable(amount) && toKey !== null){
         //send transactions here
         socket.emit('transaction submit', {
@@ -106,6 +110,7 @@ function sendPC(){
         });
     }
     amountContainer.value = ''; // reset the text field
+    toAccountContainer.selectedIndex = 0;
 }
 
 function isSendable(amount){
@@ -148,4 +153,102 @@ function addAddressOption(address){
     opt.value = toAccountSelectBox.childNodes.length - 2; // 2 because we have a null 0 1 2... value list
     opt.text = address;
     toAccountSelectBox.appendChild(opt);
+}
+
+function updateTransactionTable(transactionList){
+    let store = {};
+    let nextList = [];
+    let filteredList = [];
+
+    if(!context.transactionList){
+        context.transactionList = [];
+    }
+
+    context.transactionList.forEach(function(el){
+        store[el.transaction.id] = 0; //red, only in the old list
+    });
+
+    if(transactionList){
+        transactionList.forEach(function(el){
+            if(store[el.id] === 0){
+                store[el.id] += 1; //white, didnt move
+            }else if(store[el.id] === undefined){
+                store[el.id] = 2; // green, new item
+            }
+        });
+    }
+
+    context.transactionList.forEach(function(el){
+        if(store[el.transaction.id] === 0){
+            filteredList.push(Object.assign({},el,{style:'danger', sortOrder: 0}));
+            delete(store[el.transaction.id]);
+        }else if(store[el.transaction.id] === 1){
+            let whiteElement = Object.assign({},el,{style:'white', sortOrder: 1});
+            filteredList.push(whiteElement);
+            nextList.push(whiteElement);
+            delete(store[el.transaction.id]);
+        }else if(store[el.transaction.id] === 2){
+            filteredList.push(Object.assign({},el,{style:'success', sortOrder: 2}));
+            nextList.push(Object.assign({},el,{style:'white', sortOrder: 1}));
+            delete(store[el.transaction.id]);
+        }
+    });
+
+    transactionList.forEach(function(el){
+        if(store[el.id] === 0){
+            filteredList.push(Object.assign({},{ transaction: el },{style:'danger', sortOrder: 0}));
+            delete(store[el.id]);
+        }else if(store[el.id] === 1){
+            let whiteElement = Object.assign({},{ transaction: el},{style:'white', sortOrder: 1});
+            filteredList.push(whiteElement);
+            nextList.push(whiteElement);
+            delete(store[el.id]);
+        }else if(store[el.id] === 2){
+            filteredList.push(Object.assign({},{ transaction: el},{style:'success', sortOrder: 2}));
+            nextList.push(Object.assign({},{ transaction: el},{style:'white', sortOrder: 1}));
+            delete(store[el.id]);
+        }
+    });
+
+    //update the way the table looks 
+    runTransactionTableUpdate(filteredList,nextList);
+}
+
+function runTransactionTableUpdate(filteredList, nextList){
+    buildTransacionTable(filteredList);
+    setTimeout(function(nextSet){
+        buildTransacionTable(nextSet);
+    }, 2000, nextList);
+}
+
+function buildTransacionTable(transactions){
+    context.transactionList = transactions;
+    let table = document.getElementById('transactionTable');
+    let newTableBody = document.createElement('tbody');
+    table.removeChild(document.getElementById('transactionTableBody'));
+    newTableBody.id = 'transactionTableBody';
+    transactions.forEach(function(el){
+        newTableBody.appendChild(buildRow(el));
+    });
+    table.appendChild(newTableBody);
+}
+
+function buildRow(data){
+    let newRow = document.createElement('tr');
+    let id = document.createElement('td');
+    let to = document.createElement('td');
+    let from = document.createElement('td');
+    let amount = document.createElement('td');
+    newRow.classList.add(data.style);
+    id.textContent = data.transaction.id;
+    to.textContent = data.transaction.toAddress;
+    from.textContent = data.transaction.fromAddress;
+    amount.textContent = data.transaction.amount;
+
+    newRow.appendChild(id);
+    newRow.appendChild(to);
+    newRow.appendChild(from);
+    newRow.appendChild(amount);
+
+    return newRow;
 }

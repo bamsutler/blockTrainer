@@ -3,8 +3,8 @@ function tx(to, from, num) {
     let idHasher = crypto.createHash('sha256');
     let timestamp = Date.now();
 
-    idHasher.update(to);
-    idHasher.update(from);
+    idHasher.update(String(to));
+    idHasher.update(String(from));
     idHasher.update(String(num));
     idHasher.update(String(timestamp));
 
